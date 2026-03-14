@@ -1,12 +1,11 @@
 # Restoran Sipariş ve Mutfak Yönetim Sistemi - Hexagonal Architecture
 
-Bu proje, Hexagonal Architecture (Ports & Adapters) kullanılarak geliştirilmiş bir restoran sipariş ve
-mutfak yönetim sistemidir. .NET 10 ile oluşturulmuştur.
+Bu proje, Hexagonal Architecture (Ports & Adapters) kullanılarak geliştirilmiş bir restoran sipariş ve mutfak yönetim sistemidir. .NET 10 ile oluşturulmuştur.
 
 ## 🎯 Proje Hakkında
 
-Hexagonal Architecture (a.k.a. Ports & Adapters), Alistair Cockburn tarafından 2005 yılında
-tanımlanmıştır. Temel fikir, uygulamanın çekirdeğini (domain + use cases) dış dünyadan izole etmektir.
+Hexagonal Architecture (a.k.a. Ports & Adapters), Alistair Cockburn tarafından 2005 yılında tanımlanmıştır. Temel fikir, uygulamanın çekirdeğini (domain + use cases) dış dünyadan izole etmektir.
+
 Uygulama çekirdeği, **port** adı verilen arayüzler aracılığıyla dışarıyla iletişim kurar;
 bu portların gerçek dünya implementasyonları ise **adapter** adını alır.
 
@@ -485,7 +484,6 @@ builder.Services.AddScoped<IReservationUseCase, ReservationUseCase>();         /
 | **Katman Organizasyonu** | Primary Adapter → Port → UseCase → Port → Secondary Adapter | Domain → Repository Interface → Application → Infrastructure | Entities → Use Cases → Interface Adapters → Frameworks | Her feature; kendi handler, model, validator, query'sini içerir |
 | **Port/Arayüz Yeri** | Application katmanında `Ports/Input` ve `Ports/Output` | Application katmanında repository arayüzleri | Use Cases / Interface Adapters katmanında | Arayüz çoğunlukla yoktur; feature kendi içinde tamamdır |
 | **Bağımlılık Yönü** | Her şey uygulama çekirdeğine doğru | Her şey domain çekirdeğine doğru | Her şey içe doğru (Dependency Rule) | Feature'lar birbirine bağımlı değildir |
-| **Test Edilebilirlik** | Port mock'lanarak her adapter bağımsız test edilir | Repository mock'lanarak use case test edilir | Use case mock'lanarak her katman test edilir | Her dilim izole test edilebilir; entegrasyon testi kolaydır |
 | **Kod Organizasyonu** | Katman bazlı (`Controllers/`, `UseCases/`, `Repositories/`) | Katman bazlı (`Domain/`, `Application/`, `Infrastructure/`) | Katman bazlı (`Entities/`, `UseCases/`, `Adapters/`) | Özellik bazlı (`Features/CreateOrder/`, `Features/GetMenu/`) |
 | **Karmaşıklık** | Orta — port/adapter kavramları öğrenme eğrisi gerektirir | Orta — halka sayısı arttıkça mapping yükü artar | Orta–Yüksek — katman sayısı ve kurallar detaylıdır | Düşük–Orta — yeni özellik eklemek kolay, kod tekrarı riski var |
 | **Over-Engineering Riski** | Küçük projelerde yüksek | Küçük projelerde yüksek | Küçük projelerde yüksek | Düşük — ihtiyaç oldukça büyür |
@@ -502,7 +500,6 @@ builder.Services.AddScoped<IReservationUseCase, ReservationUseCase>();         /
 | Domain çok zengin, DDD tam anlamıyla uygulanacak | **Onion** |
 | Framework bağımsızlığı ve katı bağımlılık kuralı öncelikli | **Clean** |
 | Ekip küçük, hızlı delivery, CRUD yoğun | **Vertical Slice** |
-| Mimariler arasındaki temel farkı öğrenmek istiyorsun | Hepsini incele 🙂 |
 
 > **Not:** Hexagonal, Onion ve Clean Architecture birbirinden çok farklı değildir; hepsi çekirdeği dıştan izole etmeyi hedefler. Temel ayrım terminoloji ve katman isimlendirmesindedir. Vertical Slice ise organizasyon eksenini **katman → özellik** olarak değiştirir.
 
