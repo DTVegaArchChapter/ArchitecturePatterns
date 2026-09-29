@@ -45,7 +45,6 @@ public sealed class UpdateOrderStatusCommandHandler(
             return Result<OrderDto>.Conflict(ex.Message);
         }
 
-        await unitOfWork.Orders.UpdateAsync(order, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         var orderDto = await orderReadService.GetByIdAsync(order.Id, cancellationToken);

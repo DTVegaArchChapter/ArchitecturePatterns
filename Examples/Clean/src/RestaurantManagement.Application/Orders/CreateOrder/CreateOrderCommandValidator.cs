@@ -27,6 +27,10 @@ public sealed class CreateOrderCommandValidator : AbstractValidator<CreateOrderC
         RuleFor(x => x.Items)
             .NotEmpty().WithMessage("Order must contain at least one item");
 
+        RuleFor(x => x.Items)
+            .Must(items => items is null || items.Select(i => i.MenuItemId).Distinct().Count() == items.Count)
+            .WithMessage("Order cannot contain duplicate menu items");
+
         RuleForEach(x => x.Items)
             .SetValidator(new OrderItemRequestValidator());
 

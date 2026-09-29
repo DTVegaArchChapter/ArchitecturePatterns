@@ -23,12 +23,6 @@ public sealed class MenuItemRepository(RestaurantDbContext context) : IMenuItemR
         await context.MenuItems.AddAsync(menuItem, cancellationToken);
     }
 
-    public Task UpdateAsync(MenuItem menuItem, CancellationToken cancellationToken = default)
-    {
-        context.MenuItems.Update(menuItem);
-        return Task.CompletedTask;
-    }
-
     public Task DeleteAsync(MenuItem menuItem, CancellationToken cancellationToken = default)
     {
         context.MenuItems.Remove(menuItem);

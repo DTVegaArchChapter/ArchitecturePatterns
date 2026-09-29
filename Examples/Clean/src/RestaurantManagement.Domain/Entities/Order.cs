@@ -35,17 +35,20 @@ public class Order : BaseEntity, IAggregateRoot
         if (Status != OrderStatus.Pending)
             throw new InvalidOperationException($"Cannot add items to order with status: {Status}");
 
+        if (_orderItems.Any(oi => oi.MenuItemId == menuItemId))
+            throw new InvalidOperationException($"Menu item {menuItemId} is already in the order");
+
         var orderItem = new OrderItem(menuItemId, quantity, price, specialInstructions);
         _orderItems.Add(orderItem);
         RecalculateTotal();
     }
 
-    public void RemoveOrderItem(int orderItemId)
+    public void RemoveOrderItem(int menuItemId)
     {
         if (Status != OrderStatus.Pending)
             throw new InvalidOperationException($"Cannot remove items from order with status: {Status}");
 
-        var item = _orderItems.FirstOrDefault(oi => oi.Id == orderItemId);
+        var item = _orderItems.FirstOrDefault(oi => oi.MenuItemId == menuItemId);
         if (item != null)
         {
             _orderItems.Remove(item);
@@ -53,12 +56,12 @@ public class Order : BaseEntity, IAggregateRoot
         }
     }
 
-    public void UpdateOrderItemQuantity(int orderItemId, int newQuantity)
+    public void UpdateOrderItemQuantity(int menuItemId, int newQuantity)
     {
         if (Status != OrderStatus.Pending)
             throw new InvalidOperationException($"Cannot update items in order with status: {Status}");
 
-        var item = _orderItems.FirstOrDefault(oi => oi.Id == orderItemId);
+        var item = _orderItems.FirstOrDefault(oi => oi.MenuItemId == menuItemId);
         if (item != null)
         {
             item.UpdateQuantity(newQuantity);
@@ -97,6 +100,8 @@ public class Order : BaseEntity, IAggregateRoot
     {
         if (Status == OrderStatus.Served)
             throw new InvalidOperationException("Cannot cancel a served order");
+        if (Status == OrderStatus.Cancelled)
+            throw new InvalidOperationException("Order is already cancelled");
 
         Status = OrderStatus.Cancelled;
     }

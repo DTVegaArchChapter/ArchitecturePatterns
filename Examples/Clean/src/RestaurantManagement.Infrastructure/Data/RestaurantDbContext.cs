@@ -21,7 +21,8 @@ public class RestaurantDbContext(DbContextOptions<RestaurantDbContext> options) 
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.TableNumber).IsRequired();
             entity.Property(e => e.Capacity).IsRequired();
-            entity.Property(e => e.Status).IsRequired();
+            entity.Property(e => e.Status).IsRequired().IsConcurrencyToken();
+            entity.HasIndex(e => e.TableNumber).IsUnique();
         });
 
         modelBuilder.Entity<MenuItem>(entity =>
@@ -41,6 +42,7 @@ public class RestaurantDbContext(DbContextOptions<RestaurantDbContext> options) 
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.OrderNumber).HasMaxLength(25).IsRequired();
+            entity.HasIndex(e => e.OrderNumber).IsUnique();
             entity.Property(e => e.Notes).HasMaxLength(500);
             entity.Property(e => e.TotalAmount).HasPrecision(18, 2);
 

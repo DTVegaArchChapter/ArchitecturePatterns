@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using RestaurantManagement.Application.Common.Interfaces;
 using RestaurantManagement.Infrastructure.Data;
@@ -18,7 +19,14 @@ public sealed class UnitOfWork(
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        return await context.SaveChangesAsync(cancellationToken);
+        try
+        {
+            return await context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new InvalidOperationException("The data was modified by another request. Please retry.");
+        }
     }
 
     public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)

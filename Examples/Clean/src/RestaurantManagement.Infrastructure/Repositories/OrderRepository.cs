@@ -19,12 +19,6 @@ public sealed class OrderRepository(RestaurantDbContext context) : IOrderReposit
         await context.Orders.AddAsync(order, cancellationToken);
     }
 
-    public Task UpdateAsync(Order order, CancellationToken cancellationToken = default)
-    {
-        context.Orders.Update(order);
-        return Task.CompletedTask;
-    }
-
     public Task DeleteAsync(Order order, CancellationToken cancellationToken = default)
     {
         context.Orders.Remove(order);

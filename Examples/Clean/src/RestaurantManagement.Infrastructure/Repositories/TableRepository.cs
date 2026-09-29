@@ -23,12 +23,6 @@ public sealed class TableRepository(RestaurantDbContext context) : ITableReposit
         await context.Tables.AddAsync(table, cancellationToken);
     }
 
-    public Task UpdateAsync(Table table, CancellationToken cancellationToken = default)
-    {
-        context.Tables.Update(table);
-        return Task.CompletedTask;
-    }
-
     public Task DeleteAsync(Table table, CancellationToken cancellationToken = default)
     {
         context.Tables.Remove(table);

@@ -45,6 +45,9 @@ public class Table : BaseEntity, IAggregateRoot
 
     public void MakeAvailable()
     {
+        if (Status == TableStatus.Available)
+            throw new InvalidOperationException($"Table {TableNumber} is already available");
+
         Status = TableStatus.Available;
         ReservedAt = null;
     }

@@ -36,7 +36,7 @@ public sealed class CreateOrderCommandHandler(IUnitOfWork unitOfWork)
                 errorDetails: new Dictionary<string, object> { ["UnavailableMenuItemIds"] = unavailableMenuItemIds });
         }
 
-        var orderNumber = $"ORD-{DateTime.UtcNow:yyyyMMdd-HHmmss}";
+        var orderNumber = $"ORD-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpperInvariant()}";
         var order = new Order(orderNumber, command.TableId, command.Notes);
 
         foreach (var itemRequest in command.Items)
@@ -45,8 +45,17 @@ public sealed class CreateOrderCommandHandler(IUnitOfWork unitOfWork)
             order.AddOrderItem(itemRequest.MenuItemId, itemRequest.Quantity, menuItem.Price, itemRequest.SpecialInstructions);
         }
 
+        table.Occupy();
+
         await unitOfWork.Orders.AddAsync(order, cancellationToken);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Result<OrderDto>.Conflict(ex.Message);
+        }
 
         var orderItemDtos = order.OrderItems.Select(oi =>
         {

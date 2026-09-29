@@ -40,7 +40,6 @@ public sealed class UpdateTableStatusCommandHandler(IUnitOfWork unitOfWork)
             return Result<TableDto>.Conflict(ex.Message);
         }
 
-        await unitOfWork.Tables.UpdateAsync(table, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         var tableDto = new TableDto(
