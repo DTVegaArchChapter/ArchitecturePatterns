@@ -17,9 +17,9 @@ public sealed class OrderItemRequestValidator : AbstractValidator<OrderItemReque
     }
 }
 
-public sealed class CreateOrderRequestValidator : AbstractValidator<CreateOrderRequest>
+public sealed class CreateOrderCommandValidator : AbstractValidator<CreateOrderCommand>
 {
-    public CreateOrderRequestValidator()
+    public CreateOrderCommandValidator()
     {
         RuleFor(x => x.TableId)
             .GreaterThan(0).WithMessage("TableId must be greater than 0");

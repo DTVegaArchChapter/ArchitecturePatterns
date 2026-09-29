@@ -11,61 +11,7 @@ public sealed class OrderRepository(RestaurantDbContext context) : IOrderReposit
     {
         return await context.Orders
             .Include(o => o.OrderItems)
-            .ThenInclude(oi => oi.MenuItem)
-            .Include(o => o.Table)
             .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
-    }
-
-    public async Task<Order?> GetByOrderNumberAsync(string orderNumber, CancellationToken cancellationToken = default)
-    {
-        return await context.Orders
-            .Include(o => o.OrderItems)
-            .ThenInclude(oi => oi.MenuItem)
-            .Include(o => o.Table)
-            .FirstOrDefaultAsync(o => o.OrderNumber == orderNumber, cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<Order>> GetAllAsync(CancellationToken cancellationToken = default)
-    {
-        return await context.Orders
-            .Include(o => o.OrderItems)
-            .ThenInclude(oi => oi.MenuItem)
-            .Include(o => o.Table)
-            .OrderByDescending(o => o.OrderDate)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<Order>> GetByTableIdAsync(int tableId, CancellationToken cancellationToken = default)
-    {
-        return await context.Orders
-            .Include(o => o.OrderItems)
-            .ThenInclude(oi => oi.MenuItem)
-            .Include(o => o.Table)
-            .Where(o => o.TableId == tableId)
-            .OrderByDescending(o => o.OrderDate)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<Order>> GetByStatusAsync(OrderStatus status, CancellationToken cancellationToken = default)
-    {
-        return await context.Orders
-            .Include(o => o.OrderItems)
-            .ThenInclude(oi => oi.MenuItem)
-            .Include(o => o.Table)
-            .Where(o => o.Status == status)
-            .OrderBy(o => o.OrderDate)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<Order>> GetKitchenOrdersAsync(CancellationToken cancellationToken = default)
-    {
-        return await context.Orders
-            .Include(o => o.OrderItems)
-            .ThenInclude(oi => oi.MenuItem)
-            .Include(o => o.Table)
-            .Where(o => o.Status == OrderStatus.Pending || o.Status == OrderStatus.InPreparation)
-            .OrderBy(o => o.OrderDate)
-            .ToListAsync(cancellationToken);
     }
 
     public async Task AddAsync(Order order, CancellationToken cancellationToken = default)

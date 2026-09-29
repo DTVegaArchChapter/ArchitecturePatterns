@@ -1,23 +1,20 @@
+using Mediator;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantManagement.Api.Common;
 using RestaurantManagement.Api.Contracts.Tables;
-using RestaurantManagement.Domain.Entities;
-using GetAllTablesUseCase = RestaurantManagement.Application.Tables.GetAllTables.GetAllTablesUseCase;
-using UpdateTableStatusUseCase = RestaurantManagement.Application.Tables.UpdateTableStatus.UpdateTableStatusUseCase;
-using AppUpdateTableStatusRequest = RestaurantManagement.Application.Tables.UpdateTableStatus.UpdateTableStatusRequest;
+using RestaurantManagement.Application.Tables.GetAllTables;
+using RestaurantManagement.Application.Tables.UpdateTableStatus;
 
 namespace RestaurantManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class TablesController(
-    GetAllTablesUseCase getAllTablesUseCase,
-    UpdateTableStatusUseCase updateTableStatusUseCase) : ControllerBase
+public class TablesController(ISender sender) : ControllerBase
 {
     [HttpGet]
     public async Task<IResult> GetAllTables(CancellationToken cancellationToken)
     {
-        var result = await getAllTablesUseCase.ExecuteAsync(cancellationToken);
+        var result = await sender.Send(new GetAllTablesQuery(), cancellationToken);
         return result.ToApiResult();
     }
 
@@ -27,13 +24,7 @@ public class TablesController(
         [FromBody] UpdateTableStatusRequest request,
         CancellationToken cancellationToken)
     {
-        if (!Enum.TryParse<TableStatus>(request.NewStatus, true, out var status))
-        {
-            return Results.BadRequest("Invalid table status");
-        }
-
-        var useCaseRequest = new AppUpdateTableStatusRequest(tableId, status);
-        var result = await updateTableStatusUseCase.ExecuteAsync(useCaseRequest, cancellationToken);
+        var result = await sender.Send(new UpdateTableStatusCommand(tableId, request.NewStatus), cancellationToken);
         return result.ToApiResult();
     }
 }

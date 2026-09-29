@@ -2,7 +2,7 @@ using RestaurantManagement.Domain.Common;
 
 namespace RestaurantManagement.Domain.Entities;
 
-public class MenuItem : BaseEntity
+public class MenuItem : BaseEntity, IAggregateRoot
 {
     public string Name { get; private set; } = null!;
     public string Category { get; private set; } = null!;

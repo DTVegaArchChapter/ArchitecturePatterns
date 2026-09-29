@@ -16,7 +16,12 @@ public interface IResult
     Dictionary<string, object> ErrorDetails { get; }
 }
 
-public sealed class Result<T> : IResult
+public interface IResultFactory<TSelf> where TSelf : IResultFactory<TSelf>
+{
+    static abstract TSelf ValidationFailure(List<string> errorMessages, Dictionary<string, string[]> propertyErrors);
+}
+
+public sealed class Result<T> : IResult, IResultFactory<Result<T>>
 {
     private Dictionary<string, object>? _errorDetails;
     public bool IsSuccess { get; private init; }

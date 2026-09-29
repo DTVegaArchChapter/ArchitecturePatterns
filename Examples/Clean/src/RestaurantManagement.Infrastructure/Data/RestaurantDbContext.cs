@@ -16,6 +16,7 @@ public class RestaurantDbContext(DbContextOptions<RestaurantDbContext> options) 
 
         modelBuilder.Entity<Table>(entity =>
         {
+            entity.ToTable("Tables");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.TableNumber).IsRequired();
@@ -25,6 +26,7 @@ public class RestaurantDbContext(DbContextOptions<RestaurantDbContext> options) 
 
         modelBuilder.Entity<MenuItem>(entity =>
         {
+            entity.ToTable("MenuItems");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
@@ -35,13 +37,14 @@ public class RestaurantDbContext(DbContextOptions<RestaurantDbContext> options) 
 
         modelBuilder.Entity<Order>(entity =>
         {
+            entity.ToTable("Orders");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.OrderNumber).HasMaxLength(25).IsRequired();
             entity.Property(e => e.Notes).HasMaxLength(500);
             entity.Property(e => e.TotalAmount).HasPrecision(18, 2);
 
-            entity.HasOne(e => e.Table)
+            entity.HasOne<Table>()
                 .WithMany()
                 .HasForeignKey(e => e.TableId)
                 .IsRequired();
@@ -54,6 +57,7 @@ public class RestaurantDbContext(DbContextOptions<RestaurantDbContext> options) 
 
         modelBuilder.Entity<OrderItem>(entity =>
         {
+            entity.ToTable("OrderItems");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.Price).HasPrecision(18, 2);
@@ -64,7 +68,7 @@ public class RestaurantDbContext(DbContextOptions<RestaurantDbContext> options) 
                 .HasForeignKey(e => e.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne(e => e.MenuItem)
+            entity.HasOne<MenuItem>()
                 .WithMany()
                 .HasForeignKey(e => e.MenuItemId)
                 .IsRequired();

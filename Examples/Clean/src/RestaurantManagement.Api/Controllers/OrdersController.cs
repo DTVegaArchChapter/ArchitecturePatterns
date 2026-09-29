@@ -1,22 +1,16 @@
+using Mediator;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantManagement.Api.Common;
 using RestaurantManagement.Api.Contracts.Orders;
-using RestaurantManagement.Domain.Entities;
-using CreateOrderUseCase = RestaurantManagement.Application.Orders.CreateOrder.CreateOrderUseCase;
-using UpdateOrderStatusUseCase = RestaurantManagement.Application.Orders.UpdateOrderStatus.UpdateOrderStatusUseCase;
-using GetKitchenOrdersUseCase = RestaurantManagement.Application.Orders.GetKitchenOrders.GetKitchenOrdersUseCase;
-using AppCreateOrderRequest = RestaurantManagement.Application.Orders.CreateOrder.CreateOrderRequest;
-using AppOrderItemRequest = RestaurantManagement.Application.Orders.CreateOrder.OrderItemRequest;
-using AppUpdateOrderStatusRequest = RestaurantManagement.Application.Orders.UpdateOrderStatus.UpdateOrderStatusRequest;
+using RestaurantManagement.Application.Orders.CreateOrder;
+using RestaurantManagement.Application.Orders.GetKitchenOrders;
+using RestaurantManagement.Application.Orders.UpdateOrderStatus;
 
 namespace RestaurantManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class OrdersController(
-    CreateOrderUseCase createOrderUseCase,
-    UpdateOrderStatusUseCase updateOrderStatusUseCase,
-    GetKitchenOrdersUseCase getKitchenOrdersUseCase) : ControllerBase
+public class OrdersController(ISender sender) : ControllerBase
 {
     [HttpPost]
     public async Task<IResult> CreateOrder(
@@ -24,11 +18,11 @@ public class OrdersController(
         CancellationToken cancellationToken)
     {
         var orderItems = request.Items
-            .Select(i => new AppOrderItemRequest(i.MenuItemId, i.Quantity, i.SpecialInstructions))
+            .Select(i => new RestaurantManagement.Application.Orders.CreateOrder.OrderItemRequest(i.MenuItemId, i.Quantity, i.SpecialInstructions))
             .ToList();
 
-        var useCaseRequest = new AppCreateOrderRequest(request.TableId, orderItems, request.Notes);
-        var result = await createOrderUseCase.ExecuteAsync(useCaseRequest, cancellationToken);
+        var command = new CreateOrderCommand(request.TableId, orderItems, request.Notes);
+        var result = await sender.Send(command, cancellationToken);
 
         return result.ToApiResult(data => Results.Created($"/api/orders/{data?.Id}", data));
     }
@@ -39,20 +33,14 @@ public class OrdersController(
         [FromBody] UpdateOrderStatusRequest request,
         CancellationToken cancellationToken)
     {
-        if (!Enum.TryParse<OrderStatus>(request.NewStatus, true, out var status))
-        {
-            return Results.BadRequest("Invalid order status");
-        }
-
-        var useCaseRequest = new AppUpdateOrderStatusRequest(orderId, status);
-        var result = await updateOrderStatusUseCase.ExecuteAsync(useCaseRequest, cancellationToken);
+        var result = await sender.Send(new UpdateOrderStatusCommand(orderId, request.NewStatus), cancellationToken);
         return result.ToApiResult();
     }
 
     [HttpGet("kitchen")]
     public async Task<IResult> GetKitchenOrders(CancellationToken cancellationToken)
     {
-        var result = await getKitchenOrdersUseCase.ExecuteAsync(cancellationToken);
+        var result = await sender.Send(new GetKitchenOrdersQuery(), cancellationToken);
         return result.ToApiResult();
     }
 }

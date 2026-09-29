@@ -1,4 +1,4 @@
-using FluentValidation;
+using Mediator;
 using RestaurantManagement.Application.Common;
 using RestaurantManagement.Application.Common.DTOs;
 using RestaurantManagement.Application.Common.Interfaces;
@@ -6,26 +6,15 @@ using RestaurantManagement.Domain.Entities;
 
 namespace RestaurantManagement.Application.Orders.CreateOrder;
 
-public sealed class CreateOrderUseCase(
-    IUnitOfWork unitOfWork,
-    IValidator<CreateOrderRequest> validator)
+public sealed class CreateOrderCommandHandler(IUnitOfWork unitOfWork)
+    : ICommandHandler<CreateOrderCommand, Result<OrderDto>>
 {
-    public async Task<Result<OrderDto>> ExecuteAsync(CreateOrderRequest request, CancellationToken cancellationToken = default)
+    public async ValueTask<Result<OrderDto>> Handle(CreateOrderCommand command, CancellationToken cancellationToken)
     {
-        var validationResult = await validator.ValidateAsync(request, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-            var propertyErrors = validationResult.Errors
-                .GroupBy(e => e.PropertyName)
-                .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
-            return Result<OrderDto>.ValidationFailure(errors, propertyErrors);
-        }
-
-        var table = await unitOfWork.Tables.GetByIdAsync(request.TableId, cancellationToken);
+        var table = await unitOfWork.Tables.GetByIdAsync(command.TableId, cancellationToken);
         if (table is null)
         {
-            return Result<OrderDto>.NotFound($"Table {request.TableId} not found");
+            return Result<OrderDto>.NotFound($"Table {command.TableId} not found");
         }
 
         if (!table.IsAvailable)
@@ -33,7 +22,7 @@ public sealed class CreateOrderUseCase(
             return Result<OrderDto>.Failure($"Table {table.TableNumber} is not available for orders");
         }
 
-        var menuItemIds = request.Items.Select(i => i.MenuItemId).ToList();
+        var menuItemIds = command.Items.Select(i => i.MenuItemId).ToList();
         var menuItems = await unitOfWork.MenuItems.GetByIdsAsync(menuItemIds, cancellationToken);
         var availableMenuItems = menuItems.Where(m => m.IsAvailable).ToList();
 
@@ -48,9 +37,9 @@ public sealed class CreateOrderUseCase(
         }
 
         var orderNumber = $"ORD-{DateTime.UtcNow:yyyyMMdd-HHmmss}";
-        var order = new Order(orderNumber, request.TableId, request.Notes);
+        var order = new Order(orderNumber, command.TableId, command.Notes);
 
-        foreach (var itemRequest in request.Items)
+        foreach (var itemRequest in command.Items)
         {
             var menuItem = availableMenuItems.First(m => m.Id == itemRequest.MenuItemId);
             order.AddOrderItem(itemRequest.MenuItemId, itemRequest.Quantity, menuItem.Price, itemRequest.SpecialInstructions);

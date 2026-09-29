@@ -18,21 +18,6 @@ public sealed class TableRepository(RestaurantDbContext context) : ITableReposit
             .FirstOrDefaultAsync(t => t.TableNumber == tableNumber, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Table>> GetAllAsync(CancellationToken cancellationToken = default)
-    {
-        return await context.Tables
-            .OrderBy(t => t.TableNumber)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<Table>> GetAvailableTablesAsync(CancellationToken cancellationToken = default)
-    {
-        return await context.Tables
-            .Where(t => t.Status == TableStatus.Available)
-            .OrderBy(t => t.TableNumber)
-            .ToListAsync(cancellationToken);
-    }
-
     public async Task AddAsync(Table table, CancellationToken cancellationToken = default)
     {
         await context.Tables.AddAsync(table, cancellationToken);

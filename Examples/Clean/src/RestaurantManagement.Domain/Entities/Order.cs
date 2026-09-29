@@ -2,7 +2,7 @@ using RestaurantManagement.Domain.Common;
 
 namespace RestaurantManagement.Domain.Entities;
 
-public class Order : BaseEntity
+public class Order : BaseEntity, IAggregateRoot
 {
     public string OrderNumber { get; private set; } = null!;
     public int TableId { get; private set; }
@@ -12,7 +12,6 @@ public class Order : BaseEntity
     public string? Notes { get; private set; }
 
     // Navigation properties
-    public Table Table { get; private set; } = null!;
     private readonly List<OrderItem> _orderItems = [];
     public IReadOnlyCollection<OrderItem> OrderItems => _orderItems.AsReadOnly();
 

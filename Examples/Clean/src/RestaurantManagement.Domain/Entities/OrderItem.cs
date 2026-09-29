@@ -12,7 +12,6 @@ public class OrderItem : BaseEntity
 
     // Navigation properties
     public Order Order { get; private set; } = null!;
-    public MenuItem MenuItem { get; private set; } = null!;
 
     private OrderItem() { } // For EF Core
 

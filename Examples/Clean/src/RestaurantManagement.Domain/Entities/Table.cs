@@ -2,7 +2,7 @@ using RestaurantManagement.Domain.Common;
 
 namespace RestaurantManagement.Domain.Entities;
 
-public class Table : BaseEntity
+public class Table : BaseEntity, IAggregateRoot
 {
     public int TableNumber { get; private set; }
     public int Capacity { get; private set; }
