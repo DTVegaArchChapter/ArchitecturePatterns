@@ -2,6 +2,7 @@ using Mediator;
 using RestaurantManagement.Application.Common;
 using RestaurantManagement.Application.Common.DTOs;
 using RestaurantManagement.Application.Common.Interfaces;
+using RestaurantManagement.Domain.Common;
 using RestaurantManagement.Domain.Entities;
 
 namespace RestaurantManagement.Application.Orders.UpdateOrderStatus;
@@ -19,30 +20,29 @@ public sealed class UpdateOrderStatusCommandHandler(
             return Result<OrderDto>.NotFound($"Order {command.OrderId} not found");
         }
 
-        try
+        var newStatus = Enum.Parse<OrderStatus>(command.NewStatus, true);
+        DomainResult transition;
+        switch (newStatus)
         {
-            var newStatus = Enum.Parse<OrderStatus>(command.NewStatus, true);
-            switch (newStatus)
-            {
-                case OrderStatus.InPreparation:
-                    order.StartPreparation();
-                    break;
-                case OrderStatus.Ready:
-                    order.MarkAsReady();
-                    break;
-                case OrderStatus.Served:
-                    order.Serve();
-                    break;
-                case OrderStatus.Cancelled:
-                    order.Cancel();
-                    break;
-                default:
-                    return Result<OrderDto>.Failure($"Cannot transition order to status: {newStatus}");
-            }
+            case OrderStatus.InPreparation:
+                transition = order.StartPreparation();
+                break;
+            case OrderStatus.Ready:
+                transition = order.MarkAsReady();
+                break;
+            case OrderStatus.Served:
+                transition = order.Serve();
+                break;
+            case OrderStatus.Cancelled:
+                transition = order.Cancel();
+                break;
+            default:
+                return Result<OrderDto>.Failure($"Cannot transition order to status: {newStatus}");
         }
-        catch (InvalidOperationException ex)
+
+        if (!transition.IsSuccess)
         {
-            return Result<OrderDto>.Conflict(ex.Message);
+            return Result<OrderDto>.Conflict(transition.Error!);
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);

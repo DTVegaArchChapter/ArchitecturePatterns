@@ -42,10 +42,18 @@ public sealed class CreateOrderCommandHandler(IUnitOfWork unitOfWork)
         foreach (var itemRequest in command.Items)
         {
             var menuItem = availableMenuItems.First(m => m.Id == itemRequest.MenuItemId);
-            order.AddOrderItem(itemRequest.MenuItemId, itemRequest.Quantity, menuItem.Price, itemRequest.SpecialInstructions);
+            var added = order.AddOrderItem(itemRequest.MenuItemId, itemRequest.Quantity, menuItem.Price, itemRequest.SpecialInstructions);
+            if (!added.IsSuccess)
+            {
+                return Result<OrderDto>.Conflict(added.Error!);
+            }
         }
 
-        table.Occupy();
+        var occupied = table.Occupy();
+        if (!occupied.IsSuccess)
+        {
+            return Result<OrderDto>.Conflict(occupied.Error!);
+        }
 
         await unitOfWork.Orders.AddAsync(order, cancellationToken);
         try

@@ -25,11 +25,6 @@ public sealed class ValidationBehavior<TMessage, TResponse>(IEnumerable<IValidat
             return await next(message, cancellationToken);
         }
 
-        var errors = failures.Select(e => e.ErrorMessage).ToList();
-        var propertyErrors = failures
-            .GroupBy(e => e.PropertyName)
-            .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
-
-        return TResponse.ValidationFailure(errors, propertyErrors);
+        return TResponse.From(new FluentValidation.Results.ValidationResult(failures));
     }
 }

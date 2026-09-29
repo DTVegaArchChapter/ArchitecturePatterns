@@ -30,23 +30,24 @@ public class Order : BaseEntity, IAggregateRoot
         TotalAmount = 0;
     }
 
-    public void AddOrderItem(int menuItemId, int quantity, decimal price, string? specialInstructions = null)
+    public DomainResult AddOrderItem(int menuItemId, int quantity, decimal price, string? specialInstructions = null)
     {
         if (Status != OrderStatus.Pending)
-            throw new InvalidOperationException($"Cannot add items to order with status: {Status}");
+            return DomainResult.Failure($"Cannot add items to order with status: {Status}");
 
         if (_orderItems.Any(oi => oi.MenuItemId == menuItemId))
-            throw new InvalidOperationException($"Menu item {menuItemId} is already in the order");
+            return DomainResult.Failure($"Menu item {menuItemId} is already in the order");
 
         var orderItem = new OrderItem(menuItemId, quantity, price, specialInstructions);
         _orderItems.Add(orderItem);
         RecalculateTotal();
+        return DomainResult.Success();
     }
 
-    public void RemoveOrderItem(int menuItemId)
+    public DomainResult RemoveOrderItem(int menuItemId)
     {
         if (Status != OrderStatus.Pending)
-            throw new InvalidOperationException($"Cannot remove items from order with status: {Status}");
+            return DomainResult.Failure($"Cannot remove items from order with status: {Status}");
 
         var item = _orderItems.FirstOrDefault(oi => oi.MenuItemId == menuItemId);
         if (item != null)
@@ -54,12 +55,13 @@ public class Order : BaseEntity, IAggregateRoot
             _orderItems.Remove(item);
             RecalculateTotal();
         }
+        return DomainResult.Success();
     }
 
-    public void UpdateOrderItemQuantity(int menuItemId, int newQuantity)
+    public DomainResult UpdateOrderItemQuantity(int menuItemId, int newQuantity)
     {
         if (Status != OrderStatus.Pending)
-            throw new InvalidOperationException($"Cannot update items in order with status: {Status}");
+            return DomainResult.Failure($"Cannot update items in order with status: {Status}");
 
         var item = _orderItems.FirstOrDefault(oi => oi.MenuItemId == menuItemId);
         if (item != null)
@@ -67,43 +69,48 @@ public class Order : BaseEntity, IAggregateRoot
             item.UpdateQuantity(newQuantity);
             RecalculateTotal();
         }
+        return DomainResult.Success();
     }
 
-    public void StartPreparation()
+    public DomainResult StartPreparation()
     {
         if (Status != OrderStatus.Pending)
-            throw new InvalidOperationException($"Cannot start preparation for order with status: {Status}");
+            return DomainResult.Failure($"Cannot start preparation for order with status: {Status}");
 
         if (!_orderItems.Any())
-            throw new InvalidOperationException("Cannot start preparation for order with no items");
+            return DomainResult.Failure("Cannot start preparation for order with no items");
 
         Status = OrderStatus.InPreparation;
+        return DomainResult.Success();
     }
 
-    public void MarkAsReady()
+    public DomainResult MarkAsReady()
     {
         if (Status != OrderStatus.InPreparation)
-            throw new InvalidOperationException($"Cannot mark order as ready with status: {Status}");
+            return DomainResult.Failure($"Cannot mark order as ready with status: {Status}");
 
         Status = OrderStatus.Ready;
+        return DomainResult.Success();
     }
 
-    public void Serve()
+    public DomainResult Serve()
     {
         if (Status != OrderStatus.Ready)
-            throw new InvalidOperationException($"Cannot serve order with status: {Status}");
+            return DomainResult.Failure($"Cannot serve order with status: {Status}");
 
         Status = OrderStatus.Served;
+        return DomainResult.Success();
     }
 
-    public void Cancel()
+    public DomainResult Cancel()
     {
         if (Status == OrderStatus.Served)
-            throw new InvalidOperationException("Cannot cancel a served order");
+            return DomainResult.Failure("Cannot cancel a served order");
         if (Status == OrderStatus.Cancelled)
-            throw new InvalidOperationException("Order is already cancelled");
+            return DomainResult.Failure("Order is already cancelled");
 
         Status = OrderStatus.Cancelled;
+        return DomainResult.Success();
     }
 
     public void UpdateNotes(string? notes)

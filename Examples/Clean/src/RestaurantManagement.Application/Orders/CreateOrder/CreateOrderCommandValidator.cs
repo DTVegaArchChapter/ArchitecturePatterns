@@ -2,9 +2,9 @@ using FluentValidation;
 
 namespace RestaurantManagement.Application.Orders.CreateOrder;
 
-public sealed class OrderItemRequestValidator : AbstractValidator<OrderItemRequest>
+public sealed class OrderItemInputValidator : AbstractValidator<OrderItemInput>
 {
-    public OrderItemRequestValidator()
+    public OrderItemInputValidator()
     {
         RuleFor(x => x.MenuItemId)
             .GreaterThan(0).WithMessage("MenuItemId must be greater than 0");
@@ -32,7 +32,7 @@ public sealed class CreateOrderCommandValidator : AbstractValidator<CreateOrderC
             .WithMessage("Order cannot contain duplicate menu items");
 
         RuleForEach(x => x.Items)
-            .SetValidator(new OrderItemRequestValidator());
+            .SetValidator(new OrderItemInputValidator());
 
         RuleFor(x => x.Notes)
             .MaximumLength(500).WithMessage("Notes cannot exceed 500 characters");

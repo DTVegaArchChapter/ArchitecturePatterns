@@ -2,6 +2,7 @@ using Mediator;
 using RestaurantManagement.Application.Common;
 using RestaurantManagement.Application.Common.DTOs;
 using RestaurantManagement.Application.Common.Interfaces;
+using RestaurantManagement.Domain.Common;
 using RestaurantManagement.Domain.Entities;
 
 namespace RestaurantManagement.Application.Tables.UpdateTableStatus;
@@ -17,27 +18,18 @@ public sealed class UpdateTableStatusCommandHandler(IUnitOfWork unitOfWork)
             return Result<TableDto>.NotFound($"Table {command.TableId} not found");
         }
 
-        try
+        var transition = Enum.Parse<TableStatus>(command.NewStatus, true) switch
         {
-            switch (Enum.Parse<TableStatus>(command.NewStatus, true))
-            {
-                case TableStatus.Available:
-                    table.MakeAvailable();
-                    break;
-                case TableStatus.Occupied:
-                    table.Occupy();
-                    break;
-                case TableStatus.Reserved:
-                    table.Reserve(DateTime.UtcNow);
-                    break;
-                case TableStatus.OutOfService:
-                    table.TakeOutOfService();
-                    break;
-            }
-        }
-        catch (InvalidOperationException ex)
+            TableStatus.Available => table.MakeAvailable(),
+            TableStatus.Occupied => table.Occupy(),
+            TableStatus.Reserved => table.Reserve(DateTime.UtcNow),
+            TableStatus.OutOfService => table.TakeOutOfService(),
+            _ => DomainResult.Success()
+        };
+
+        if (!transition.IsSuccess)
         {
-            return Result<TableDto>.Conflict(ex.Message);
+            return Result<TableDto>.Conflict(transition.Error!);
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);

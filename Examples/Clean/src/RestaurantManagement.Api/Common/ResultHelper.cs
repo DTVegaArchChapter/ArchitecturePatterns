@@ -4,9 +4,9 @@ namespace RestaurantManagement.Api.Common;
 
 public static class ResultHelper
 {
-    public static Microsoft.AspNetCore.Http.IResult ToApiResult<T>(
+    public static IResult ToApiResult<T>(
         this Result<T> result,
-        Func<T?, Microsoft.AspNetCore.Http.IResult>? onSuccess = null)
+        Func<T?, IResult>? onSuccess = null)
     {
         if (result.IsSuccess)
         {

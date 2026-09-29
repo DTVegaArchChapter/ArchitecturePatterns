@@ -25,39 +25,43 @@ public class Table : BaseEntity, IAggregateRoot
 
     public bool IsAvailable => Status == TableStatus.Available;
 
-    public void Reserve(DateTime reservationTime)
+    public DomainResult Reserve(DateTime reservationTime)
     {
         if (Status != TableStatus.Available)
-            throw new InvalidOperationException($"Cannot reserve table {TableNumber}. Current status: {Status}");
+            return DomainResult.Failure($"Cannot reserve table {TableNumber}. Current status: {Status}");
 
         Status = TableStatus.Reserved;
         ReservedAt = reservationTime;
+        return DomainResult.Success();
     }
 
-    public void Occupy()
+    public DomainResult Occupy()
     {
         if (Status != TableStatus.Available && Status != TableStatus.Reserved)
-            throw new InvalidOperationException($"Cannot occupy table {TableNumber}. Current status: {Status}");
+            return DomainResult.Failure($"Cannot occupy table {TableNumber}. Current status: {Status}");
 
         Status = TableStatus.Occupied;
         ReservedAt = null;
+        return DomainResult.Success();
     }
 
-    public void MakeAvailable()
+    public DomainResult MakeAvailable()
     {
         if (Status == TableStatus.Available)
-            throw new InvalidOperationException($"Table {TableNumber} is already available");
+            return DomainResult.Failure($"Table {TableNumber} is already available");
 
         Status = TableStatus.Available;
         ReservedAt = null;
+        return DomainResult.Success();
     }
 
-    public void TakeOutOfService()
+    public DomainResult TakeOutOfService()
     {
         if (Status == TableStatus.Occupied)
-            throw new InvalidOperationException($"Cannot take occupied table {TableNumber} out of service");
+            return DomainResult.Failure($"Cannot take occupied table {TableNumber} out of service");
 
         Status = TableStatus.OutOfService;
         ReservedAt = null;
+        return DomainResult.Success();
     }
 }

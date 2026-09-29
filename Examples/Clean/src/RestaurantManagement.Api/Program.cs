@@ -1,3 +1,4 @@
+using RestaurantManagement.Api.Endpoints;
 using RestaurantManagement.Application;
 using RestaurantManagement.Infrastructure;
 using RestaurantManagement.Infrastructure.Data;
@@ -5,7 +6,6 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
@@ -31,7 +31,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
-app.MapControllers();
+app.MapMenuItemEndpoints();
+app.MapOrderEndpoints();
+app.MapTableEndpoints();
 
 await app.RunAsync().ConfigureAwait(false);
 

@@ -1,3 +1,5 @@
+using FluentValidation.Results;
+
 namespace RestaurantManagement.Application.Common;
 
 public enum ResultType
@@ -8,31 +10,30 @@ public enum ResultType
     Failure
 }
 
-public interface IResult
+public interface IOperationResult
 {
     bool IsSuccess { get; }
     string? ErrorMessage { get; }
     ResultType ResultType { get; }
-    Dictionary<string, object> ErrorDetails { get; }
+    IReadOnlyDictionary<string, object> ErrorDetails { get; }
 }
 
 public interface IResultFactory<TSelf> where TSelf : IResultFactory<TSelf>
 {
-    static abstract TSelf ValidationFailure(List<string> errorMessages, Dictionary<string, string[]> propertyErrors);
+    static abstract TSelf From(ValidationResult validationResult);
 }
 
-public sealed class Result<T> : IResult, IResultFactory<Result<T>>
+public sealed class Result<T> : IOperationResult, IResultFactory<Result<T>>
 {
-    private Dictionary<string, object>? _errorDetails;
+    private static readonly IReadOnlyDictionary<string, object> Empty = new Dictionary<string, object>();
+
+    private IReadOnlyDictionary<string, object>? _errorDetails;
     public bool IsSuccess { get; private init; }
     public T? Data { get; private set; }
     public string? ErrorMessage { get; private init; }
     public ResultType ResultType { get; private init; }
 
-    public Dictionary<string, object> ErrorDetails
-    {
-        get { return _errorDetails ??= []; }
-    }
+    public IReadOnlyDictionary<string, object> ErrorDetails => _errorDetails ?? Empty;
 
     private Result() { }
 
@@ -46,7 +47,7 @@ public sealed class Result<T> : IResult, IResultFactory<Result<T>>
         };
     }
 
-    public static Result<T> Failure(string errorMessage, ResultType resultType = ResultType.Failure, Dictionary<string, object>? errorDetails = null)
+    public static Result<T> Failure(string errorMessage, ResultType resultType = ResultType.Failure, IReadOnlyDictionary<string, object>? errorDetails = null)
     {
         return new Result<T>
         {
@@ -57,23 +58,26 @@ public sealed class Result<T> : IResult, IResultFactory<Result<T>>
         };
     }
 
-    public static Result<T> NotFound(string errorMessage, Dictionary<string, object>? errorDetails = null)
+    public static Result<T> NotFound(string errorMessage, IReadOnlyDictionary<string, object>? errorDetails = null)
     {
         return Failure(errorMessage, ResultType.NotFound, errorDetails);
     }
 
-    public static Result<T> Conflict(string errorMessage, Dictionary<string, object>? errorDetails = null)
+    public static Result<T> Conflict(string errorMessage, IReadOnlyDictionary<string, object>? errorDetails = null)
     {
         return Failure(errorMessage, ResultType.Conflict, errorDetails);
     }
 
-    public static Result<T> ValidationFailure(List<string> errorMessages, Dictionary<string, string[]> propertyErrors)
+    public static Result<T> From(ValidationResult validationResult)
     {
-        var validationErrorMessage = $"Validation failed: {string.Join("; ", errorMessages)}";
-        var errorDetails = propertyErrors.ToDictionary<KeyValuePair<string, string[]>, string, object>(
-            kvp => kvp.Key,
-            kvp => kvp.Value);
+        ArgumentNullException.ThrowIfNull(validationResult);
 
-        return Failure(validationErrorMessage, ResultType.Failure, errorDetails);
+        var errors = validationResult.Errors;
+        var message = $"Validation failed: {string.Join("; ", errors.Select(e => e.ErrorMessage))}";
+        var details = errors
+            .GroupBy(e => e.PropertyName)
+            .ToDictionary(g => g.Key, g => (object)g.Select(e => e.ErrorMessage).ToArray());
+
+        return Failure(message, ResultType.Failure, details);
     }
 }
