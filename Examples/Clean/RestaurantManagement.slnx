@@ -1,4 +1,8 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
   <Project Path="src/RestaurantManagement.Domain/RestaurantManagement.Domain.csproj" />
   <Project Path="src/RestaurantManagement.Application/RestaurantManagement.Application.csproj" />
   <Project Path="src/RestaurantManagement.Infrastructure/RestaurantManagement.Infrastructure.csproj" />
