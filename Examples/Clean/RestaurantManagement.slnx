@@ -6,5 +6,11 @@
   <Project Path="src/RestaurantManagement.Domain/RestaurantManagement.Domain.csproj" />
   <Project Path="src/RestaurantManagement.Application/RestaurantManagement.Application.csproj" />
   <Project Path="src/RestaurantManagement.Infrastructure/RestaurantManagement.Infrastructure.csproj" />
+  <Folder Name="/test/">
+    <Project Path="test/RestaurantManagement.Api.ArchTests/RestaurantManagement.Api.ArchTests.csproj" />
+    <Project Path="test/RestaurantManagement.Api.FunctionalTests/RestaurantManagement.Api.FunctionalTests.csproj" />
+    <Project Path="test/RestaurantManagement.Api.IntegrationTests/RestaurantManagement.Api.IntegrationTests.csproj" />
+    <Project Path="test/RestaurantManagement.Api.Tests/RestaurantManagement.Api.Tests.csproj" />
+  </Folder>
   <Project Path="src/RestaurantManagement.Api/RestaurantManagement.Api.csproj" />
 </Solution>
