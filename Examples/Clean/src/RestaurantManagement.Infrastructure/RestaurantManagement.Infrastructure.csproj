@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RestaurantManagement.Application\RestaurantManagement.Application.csproj" />
+    <ProjectReference Include="..\RestaurantManagement.Domain\RestaurantManagement.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
