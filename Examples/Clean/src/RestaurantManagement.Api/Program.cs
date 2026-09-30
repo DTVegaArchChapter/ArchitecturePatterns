@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
+builder.Services.AddAuthorization();
 
 builder.Services.AddInfrastructure(
     builder.Configuration.GetConnectionString("RestaurantDb") ?? "Data Source=restaurant.db");
